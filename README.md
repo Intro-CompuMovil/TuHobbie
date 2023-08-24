@@ -3,7 +3,7 @@
 ## Objetivos de la app
 TuHobbie es una aplicación tipo "red social” que ayudara a los diferentes deportistas a encontrar canchas de diferentes deportes ya sean públicas o privadas, utilizando el gps y las rutas del dispositivo móvil para geolocalizar las diferentes canchas cercanos a ellos dependiendo del tipo de cancha de su preferencia.
 
-# Caracteristicas principales
+## Caracteristicas principales
 - Seleccion preferencias: Se podra seleccionar el/los deporte(s) de preferencia
 - Busqueda canchas: Se mostrara las canhas mas cercanas al usurio
 - Creacion grupo: El usuario podra invitar a amigos para crear un grupo/equipo
