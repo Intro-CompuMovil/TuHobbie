@@ -13,7 +13,7 @@ TuHobbie es una aplicación tipo "red social” que ayudara a los diferentes dep
 - Comentarios: Los usuarios podran ver los diferentes comentarios realizados anteriormente por otros
 - Agregar cancha: Se podran agregar las canchas con lasa diferentes especificacione necesarias de las mismas
 - 
-# Integrantes
+## Integrantes
 - Martin Medina
 - Santiago Botero
 - Juan David Barajas
