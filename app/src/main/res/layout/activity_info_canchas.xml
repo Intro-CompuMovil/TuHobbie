@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".InfoCanchas">
+    <ImageView
+        android:id="@+id/canchaImageView"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:src="@drawable/sample_cancha_image"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:id="@+id/nombreCanchaTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/canchaImageView"
+        android:text="Nombre de la Cancha"
+        android:textSize="18sp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="8dp" />
+
+    <TextView
+        android:id="@+id/ubicacionCanchaTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/nombreCanchaTextView"
+        android:text="Ubicación de la Cancha"
+        android:textSize="14sp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="4dp" />
+
+    <RatingBar
+        android:id="@+id/ratingBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/ubicacionCanchaTextView"
+        android:layout_centerHorizontal="true"
+        android:numStars="5"
+        android:rating="4.5" />
+
+    <TextView
+        android:id="@+id/comentariosTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/ratingBar"
+        android:text="Comentarios de Usuarios"
+        android:textSize="16sp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="8dp" />
+
+
+
+    <Button
+        android:id="@+id/reservarButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/comentariosTextView"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp"
+        android:text="Reservar Cancha" />
+    <Button
+        android:id="@+id/agregarCanchaButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/reservarButton"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="30dp"
+        android:text="Agregar Cancha" />
+
+</RelativeLayout>

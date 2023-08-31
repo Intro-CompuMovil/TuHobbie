@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".AgregarCancha">
+    <ImageView
+        android:id="@+id/photoImageView"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/Cancha"
+        android:layout_marginTop="16dp" />
+
+    <EditText
+        android:id="@+id/nombreCanchaEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Nombre de la Cancha"
+        android:layout_below="@id/photoImageView"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp" />
+
+    <EditText
+        android:id="@+id/ubicacionCanchaEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Ubicación de la Cancha"
+        android:layout_below="@id/nombreCanchaEditText"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp" />
+
+    <!-- Agregar más campos para detalles de la cancha -->
+
+    <Button
+        android:id="@+id/guardarCanchaButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Guardar Cancha"
+        android:layout_below="@id/ubicacionCanchaEditText"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="24dp" />
+
+</RelativeLayout>
+
+
+
+

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Configuracion">
+    <TextView
+        android:id="@+id/configuracionTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Configuración"
+        android:textSize="20sp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="16dp" />
+
+    <Switch
+        android:id="@+id/switchInterfaz"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/configuracionTextView"
+        android:text="Modo de Interfaz Claro/Oscuro"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp" />
+
+    <TextView
+        android:id="@+id/notificacionesTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/switchInterfaz"
+        android:text="Notificaciones"
+        android:textSize="18sp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="24dp" />
+
+    <!-- Opciones de notificaciones, por ejemplo, botones de opción o interruptores -->
+
+    <Button
+        android:id="@+id/guardarConfiguracionButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/notificacionesTextView"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="32dp"
+        android:text="Guardar Configuración" />
+
+</RelativeLayout>
