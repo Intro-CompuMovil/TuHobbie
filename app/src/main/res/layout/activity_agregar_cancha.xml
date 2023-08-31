@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".AgregarCancha">
-    <ImageView
+    <ImageButton
         android:id="@+id/photoImageView"
         android:layout_width="150dp"
         android:layout_height="150dp"
@@ -31,7 +31,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp" />
 
-    <!-- Agregar más campos para detalles de la cancha -->
+
 
     <Button
         android:id="@+id/guardarCanchaButton"
@@ -41,6 +41,14 @@
         android:layout_below="@id/ubicacionCanchaEditText"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="24dp" />
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:layout_below="@+id/guardarCanchaButton"
+        android:layout_centerInParent="true"/>
 
 </RelativeLayout>
 
