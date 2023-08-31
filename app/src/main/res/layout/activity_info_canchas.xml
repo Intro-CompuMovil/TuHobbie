@@ -10,7 +10,7 @@
         android:id="@+id/canchaImageView"
         android:layout_width="150dp"
         android:layout_height="150dp"
-        android:src="@drawable/sample_cancha_image"
+        android:src="@drawable/cancha"
         android:layout_centerHorizontal="true" />
 
     <TextView
