@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "452975929412",
+    "project_id": "tuhobbie-3aaa3",
+    "storage_bucket": "tuhobbie-3aaa3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:452975929412:android:9d4268d6dcd28ed803f411",
+        "android_client_info": {
+          "package_name": "com.example.tuhobbie"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBNdD72QCIxi29B9muvcR33ug_5kI4BYOY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
