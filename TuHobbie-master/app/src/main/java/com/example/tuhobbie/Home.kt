@@ -1,47 +1,47 @@
 package com.example.tuhobbie
 
 import android.Manifest
+import android.app.UiModeManager
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
-import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
-import android.widget.Button
-import android.widget.EditText
-import android.widget.Toast
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import org.osmdroid.config.Configuration // Agrega esta importación
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory
-import org.osmdroid.views.MapView
-import org.osmdroid.views.overlay.Marker
-import org.osmdroid.views.overlay.Polyline
-import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
-import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
-import org.osmdroid.views.overlay.ItemizedIconOverlay
-import org.osmdroid.bonuspack.routing.Road
-import org.osmdroid.bonuspack.routing.RoadManager
 import android.os.AsyncTask
+import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.AdapterView
-import org.osmdroid.bonuspack.routing.OSRMRoadManager
-import java.io.IOException
-import android.widget.Spinner
 import android.widget.ArrayAdapter
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
+import android.widget.Button
+import android.widget.EditText
+import android.widget.Spinner
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import org.osmdroid.api.IMapController
+import org.osmdroid.bonuspack.routing.OSRMRoadManager
+import org.osmdroid.bonuspack.routing.Road
+import org.osmdroid.bonuspack.routing.RoadManager
+import org.osmdroid.config.Configuration
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.Polyline
+import org.osmdroid.views.overlay.TilesOverlay
+import java.io.IOException
+import android.location.Address
+import org.json.JSONException
+import org.json.JSONObject
+import java.util.Locale
 
 class Home : AppCompatActivity() {
     private lateinit var mapView: MapView
     private var roadOverlay: Polyline? = null
     private lateinit var roadManager: RoadManager
-
     private lateinit var Direccion: EditText
     private var deporteSeleccionado: String = "Todos"
     private val markers = ArrayList<Marker>()
@@ -57,35 +57,39 @@ class Home : AppCompatActivity() {
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        Configuration.getInstance().load(applicationContext, getSharedPreferences("osmdroid", MODE_PRIVATE))
+        Configuration.getInstance()
+            .load(applicationContext, getSharedPreferences("osmdroid", MODE_PRIVATE))
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
         val fineLocationPermission = Manifest.permission.ACCESS_FINE_LOCATION
         val coarseLocationPermission = Manifest.permission.ACCESS_COARSE_LOCATION
-
         Direccion = findViewById(R.id.texto)
 
         roadManager = OSRMRoadManager(this, "ANDROID")
 
         if (ContextCompat.checkSelfPermission(
-                this, fineLocationPermission
-            ) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(
-                this, coarseLocationPermission
+                this,
+                fineLocationPermission
+            ) != PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(
+                this,
+                coarseLocationPermission
             ) != PackageManager.PERMISSION_GRANTED
         ) {
 
             // Mostrar explicación si es necesario (esto es opcional)
-            if (ActivityCompat.shouldShowRequestPermissionRationale(
-                    this, fineLocationPermission
-                ) || ActivityCompat.shouldShowRequestPermissionRationale(this, coarseLocationPermission)
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, fineLocationPermission) ||
+                ActivityCompat.shouldShowRequestPermissionRationale(this, coarseLocationPermission)
             ) {
                 // Puedes mostrar una explicación aquí si lo deseas.
             }
 
             // Solicitar permisos de ubicación
             ActivityCompat.requestPermissions(
-                this, arrayOf(fineLocationPermission, coarseLocationPermission), LOCALIZACION
+                this,
+                arrayOf(fineLocationPermission, coarseLocationPermission),
+                LOCALIZACION
             )
         } else {
             mapView = findViewById(R.id.mapView)
@@ -99,7 +103,12 @@ class Home : AppCompatActivity() {
             spinnerDeportes.adapter = adapter
 
             spinnerDeportes.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
                     val deporte = deportes[position]
                     deporteSeleccionado = deporte
                     aplicarFiltroDeporte(deporte)
@@ -116,7 +125,8 @@ class Home : AppCompatActivity() {
                 mapView.controller.setZoom(18.0)
                 mapView.controller.setCenter(
                     org.osmdroid.util.GeoPoint(
-                        currentLocation.latitude, currentLocation.longitude
+                        currentLocation.latitude,
+                        currentLocation.longitude
                     )
                 )
             }
@@ -132,13 +142,18 @@ class Home : AppCompatActivity() {
                             mapController.setZoom(18.0)  // Puedes ajustar el nivel de zoom
                             mapController.setCenter(geoPoint)
                         } else {
-                            Toast.makeText(this, "La direccion no pudo ser encontrada", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                this,
+                                "La direccion no pudo ser encontrada",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
                     return@setOnEditorActionListener true // Agregar esta línea
                 }
                 false // No se maneja otro tipo de evento de acción
             }
+            parsearJSON()
 
 
         }
@@ -163,9 +178,10 @@ class Home : AppCompatActivity() {
 
     }
 
-
     override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == LOCALIZACION) {
@@ -188,17 +204,23 @@ class Home : AppCompatActivity() {
             if (fineLocationGranted && coarseLocationGranted) {
                 Toast.makeText(this, "PERMISOS DE LOCALIZACIÓN DADOS", Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(this, "ALGUNO DE LOS PERMISOS DE LOCALIZACIÓN NO FUE DADO", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    "ALGUNO DE LOS PERMISOS DE LOCALIZACIÓN NO FUE DADO",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }
-
 
     override fun onResume() {
         super.onResume()
 
         // Reanudar el mapa de OSMDroid
         mapView.onResume()
+        val mapController: IMapController = mapView.controller
+        mapController.setZoom(18.0)
+
 
         // Obtener la ubicación actual
         val currentLocation = getCurrentLocation()
@@ -210,24 +232,60 @@ class Home : AppCompatActivity() {
 
             // Configurar el zoom y el centro del mapa en la ubicación actual
             mapController.setZoom(18.0)
-            mapController.setCenter(org.osmdroid.util.GeoPoint(currentLocation.latitude, currentLocation.longitude))
+            mapController.setCenter(
+                org.osmdroid.util.GeoPoint(
+                    currentLocation.latitude,
+                    currentLocation.longitude
+                )
+            )
 
             // Establecer marcadores en el mapa
             showMarker(
-                org.osmdroid.util.GeoPoint(currentLocation.latitude, currentLocation.longitude),
-                "Ubicacion actual",
-                "U_A"
+                org.osmdroid.util.GeoPoint(
+                    currentLocation.latitude,
+                    currentLocation.longitude
+                ), "Ubicacion actual", "U_A"
             )
-            showMarker(org.osmdroid.util.GeoPoint(4.647327414834436, -74.07575100117528), "Cancha Tenis", "C_TENIS")
-            showMarker(org.osmdroid.util.GeoPoint(4.7112444237342395, -74.07177802349177), "Cancha Fútbol", "C_FUT")
-            showMarker(org.osmdroid.util.GeoPoint(4.704653322769599, -74.12105912354257), "Cancha Americano", "C_FUTA")
-            showMarker(org.osmdroid.util.GeoPoint(4.734634729222503, -74.0615729005996), "Cancha Voleibol", "C_VOL")
-            showMarker(org.osmdroid.util.GeoPoint(4.713044447775575, -74.14344360073954), "Cancha Baloncesto", "C_BAL")
-            showMarker(org.osmdroid.util.GeoPoint(4.664892128032969, -74.09746650107071), "Cancha Beisbol", "C_BEI")
+
+            showMarker(
+                org.osmdroid.util.GeoPoint(4.647327414834436, -74.07575100117528),
+                "Cancha Tenis",
+                "Tenis"
+            )
+
+            showMarker(
+                org.osmdroid.util.GeoPoint(4.7112444237342395, -74.07177802349177),
+                "Cancha Fútbol",
+                "Futbol"
+            )
+            showMarker(
+                org.osmdroid.util.GeoPoint(4.704653322769599, -74.12105912354257),
+                "Cancha Americano",
+                "Americano"
+            )
+            showMarker(
+                org.osmdroid.util.GeoPoint(4.734634729222503, -74.0615729005996),
+                "Cancha Voleibol",
+                "Voleibol"
+            )
+            showMarker(
+                org.osmdroid.util.GeoPoint(4.713044447775575, -74.14344360073954),
+                "Cancha Baloncesto",
+                "Baloncesto"
+            )
+            showMarker(
+                org.osmdroid.util.GeoPoint(4.664892128032969, -74.09746650107071),
+                "Cancha Beisbol",
+                "Beisbol"
+            )
 
 
         } else {
             Toast.makeText(this, "Ubicación no encontrada", Toast.LENGTH_SHORT).show()
+        }
+        val uiManager = getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+        if (uiManager.nightMode == UiModeManager.MODE_NIGHT_YES) {
+            mapView.overlayManager.tilesOverlay.setColorFilter(TilesOverlay.INVERT_COLORS)
         }
     }
 
@@ -251,13 +309,16 @@ class Home : AppCompatActivity() {
         // Icono personalizado según el deporte
         when (tipo) {
             "U_A" -> marker.icon = resources.getDrawable(R.drawable.baseline_emoji_people_24, theme)
-            "C_TENIS" -> marker.icon = resources.getDrawable(R.drawable.pista_de_tenis, theme)
-            "C_FUTA" -> marker.icon = resources.getDrawable(R.drawable.campo_de_futbol_americano, theme)
-            "C_BAL" -> marker.icon = resources.getDrawable(R.drawable.pista_de_baloncesto, theme)
-            "C_FUT" -> marker.icon = resources.getDrawable(R.drawable.campo_de_futbol, theme)
-            "C_VOL" -> marker.icon = resources.getDrawable(R.drawable.red_de_voleibol, theme)
-            "C_BEI" -> marker.icon = resources.getDrawable(R.drawable.campo_de_beisbol, theme)
-            "B_Dir" -> marker.icon = resources.getDrawable(R.drawable.baseline_location_on_24, theme)
+            "Tenis" -> marker.icon = resources.getDrawable(R.drawable.pista_de_tenis, theme)
+            "Americano" -> marker.icon =
+                resources.getDrawable(R.drawable.campo_de_futbol_americano, theme)
+
+            "Baloncesto" -> marker.icon = resources.getDrawable(R.drawable.pista_de_baloncesto, theme)
+            "Futbol" -> marker.icon = resources.getDrawable(R.drawable.campo_de_futbol, theme)
+            "Voleibol" -> marker.icon = resources.getDrawable(R.drawable.red_de_voleibol, theme)
+            "Beisbol" -> marker.icon = resources.getDrawable(R.drawable.campo_de_beisbol, theme)
+            "B_Dir" -> marker.icon =
+                resources.getDrawable(R.drawable.baseline_location_on_24, theme)
 
 
         }
@@ -271,9 +332,11 @@ class Home : AppCompatActivity() {
         val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
         return try {
             if (ActivityCompat.checkSelfPermission(
-                    this, Manifest.permission.ACCESS_FINE_LOCATION
+                    this,
+                    Manifest.permission.ACCESS_FINE_LOCATION
                 ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                    this, Manifest.permission.ACCESS_COARSE_LOCATION
+                    this,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
                 return null
@@ -297,10 +360,19 @@ class Home : AppCompatActivity() {
             // Obtener la ubicación actual del usuario
             val currentLocation = getCurrentLocation()
             if (currentLocation != null) {
-                routePoints.add(org.osmdroid.util.GeoPoint(currentLocation.latitude, currentLocation.longitude))
+                routePoints.add(
+                    org.osmdroid.util.GeoPoint(
+                        currentLocation.latitude,
+                        currentLocation.longitude
+                    )
+                )
             } else {
                 // Mostrar un mensaje de error si no se pudo obtener la ubicación actual
-                Toast.makeText(this@Home, "No se pudo obtener la ubicación actual", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this@Home,
+                    "No se pudo obtener la ubicación actual",
+                    Toast.LENGTH_SHORT
+                ).show()
                 return null
             }
 
@@ -342,13 +414,19 @@ class Home : AppCompatActivity() {
 
                 // Configurar el zoom y el centro del mapa en la ubicación actual
                 mapController.setZoom(18.0)
-                mapController.setCenter(org.osmdroid.util.GeoPoint(currentLocation.latitude, currentLocation.longitude))
+                mapController.setCenter(
+                    org.osmdroid.util.GeoPoint(
+                        currentLocation.latitude,
+                        currentLocation.longitude
+                    )
+                )
 
                 // Establecer marcadores en el mapa
                 showMarker(
-                    org.osmdroid.util.GeoPoint(currentLocation.latitude, currentLocation.longitude),
-                    "Ubicacion actual",
-                    "U_A"
+                    org.osmdroid.util.GeoPoint(
+                        currentLocation.latitude,
+                        currentLocation.longitude
+                    ), "Ubicacion actual", "U_A"
                 )
 
                 // ... (otros marcadores)
@@ -367,7 +445,10 @@ class Home : AppCompatActivity() {
                 val addresses = mGeocoder.getFromLocationName(addressString, 2)
                 if (!addresses.isNullOrEmpty()) {
                     val addressResult = addresses[0]
-                    return org.osmdroid.util.GeoPoint(addressResult.latitude, addressResult.longitude)
+                    return org.osmdroid.util.GeoPoint(
+                        addressResult.latitude,
+                        addressResult.longitude
+                    )
                 }
             } catch (e: IOException) {
                 Log.e("Error", "Error en buscarDireccion: ${e.message}")
@@ -404,6 +485,56 @@ class Home : AppCompatActivity() {
         // Busca el deporte correspondiente en el mapa de marcadoresDeportes
         return marcadoresDeportes[titulo] ?: "Desconocido"
     }
+    private fun parsearJSON() {
+        // Parsear el JSON (asegúrate de que el archivo canchas.json esté en el formato correcto)
+        try {
+            val inputStream = assets.open("canchas.json")
+            val size = inputStream.available()
+            val buffer = ByteArray(size)
+            inputStream.read(buffer)
+            inputStream.close()
+            val jsonString = String(buffer, Charsets.UTF_8)
+
+            val jsonObject = JSONObject(jsonString)
+            val canchasArray = jsonObject.getJSONArray("canchas")
+
+            for (i in 0 until canchasArray.length()) {
+                val cancha = canchasArray.getJSONObject(i)
+                val lugar = cancha.getString("lugar")
+                val nombreCancha = cancha.getString("nombre_cancha")
+                val dueno = cancha.getString("dueno")
+                val deporte = cancha.getString("deporte")
+
+                // Dentro del bucle que recorre las canchas desde el JSON
+                val geoPoint = buscarDireccion(lugar)
+                if (geoPoint != null) {
+                    if (deporte.equals("Futbol")){
+                        showMarker(geoPoint, "Cancha Fútbol", deporte)
+                    }else if (deporte.equals("Tenis")){
+                        showMarker(geoPoint, "Cancha Tenis", deporte)
+
+                    }else if (deporte.equals("Americano")){
+                        showMarker(geoPoint, "Cancha Americano", deporte)
+
+                    }else if (deporte.equals("Voleibol")){
+                        showMarker(geoPoint, "Cancha Voleibol", deporte)
+
+                    }else if (deporte.equals("Baloncesto")){
+                        showMarker(geoPoint, "Cancha Baloncesto", deporte)
+
+                    }else if (deporte.equals("Beisbol")){
+                        showMarker(geoPoint, "Cancha Beisbol", deporte)
+
+                    }
+
+                }
+            }
+        } catch (e: JSONException) {
+            e.printStackTrace()
+        }
+    }
+
+
 
 
     override fun onPause() {
@@ -411,8 +542,8 @@ class Home : AppCompatActivity() {
         mapView.onPause()
     }
 
+
     companion object {
         const val LOCALIZACION = 1
-
     }
 }
