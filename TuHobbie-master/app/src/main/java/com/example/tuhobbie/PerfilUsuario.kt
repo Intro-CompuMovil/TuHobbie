@@ -5,103 +5,102 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 
 class PerfilUsuario : AppCompatActivity() {
+
     private lateinit var imageView: ImageView
     private val REQUEST_IMAGE_CAPTURE = 1
     private val REQUEST_PICK_IMAGE = 2
 
     private val desiredWidth = 500
     private val desiredHeight = 500
+
+    private val requestCameraPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) {
+                dispatchTakePictureIntent()
+            } else {
+                Toast.makeText(this, "Permiso de cámara denegado", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+    private val requestGalleryPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) {
+                openGallery()
+            } else {
+                Toast.makeText(this, "Permiso de galería denegado", Toast.LENGTH_SHORT).show()
+            }
+        }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_perfil_usuario)
-        val but:Button=findViewById(R.id.agregarCancha)
-        val but2:Button=findViewById(R.id.amigosButton)
-        val but3:Button=findViewById(R.id.crearEvento)
-        val but4:Button=findViewById(R.id.crearEquipo)
-        val but5:Button=findViewById(R.id.verHistorial)
-        val signOut:Button=findViewById(R.id.editarPerfilButton)
+        val but: Button = findViewById(R.id.agregarCancha)
+        val but2: Button = findViewById(R.id.amigosButton)
+        val but3: Button = findViewById(R.id.crearEvento)
+        val but4: Button = findViewById(R.id.crearEquipo)
+        val but5: Button = findViewById(R.id.verHistorial)
 
         but2.setOnClickListener {
-            intent= Intent(this,ListaAmigos::class.java)
+            intent = Intent(this, ListaAmigos::class.java)
             startActivity(intent)
         }
         but3.setOnClickListener {
-            intent= Intent(this,CreacionEvento::class.java)
+            intent = Intent(this, CreacionEvento::class.java)
             startActivity(intent)
         }
         but.setOnClickListener {
-            intent= Intent(this,AgregarCancha::class.java)
+            intent = Intent(this, AgregarCancha::class.java)
             startActivity(intent)
         }
         but4.setOnClickListener {
-            intent= Intent(this,CrearEquipo::class.java)
+            intent = Intent(this, CrearEquipo::class.java)
             startActivity(intent)
         }
         but5.setOnClickListener {
-            intent= Intent(this,InfoCanchas::class.java)
-            startActivity(intent)
-        }
-        signOut.setOnClickListener {
-            Firebase.auth.signOut()
-            intent= Intent(this,MainActivity::class.java)
+            intent = Intent(this, InfoCanchas::class.java)
             startActivity(intent)
         }
         val cam: Button = findViewById(R.id.camara)
         val gal: Button = findViewById(R.id.Gallery)
         imageView = findViewById(R.id.imagen)
+        cam.setOnClickListener {
+            checkCameraPermission()
+        }
+
+        gal.setOnClickListener {
+            checkGalleryPermission()
+        }
+    }
+    private fun checkCameraPermission() {
         if (ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.CAMERA
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(
-                    this,
-                    Manifest.permission.CAMERA
-                )
-            ) {
-
-            }
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), CAMARA)
+            requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA)
         } else {
-            cam.setOnClickListener {
-                dispatchTakePictureIntent()
-            }
-            gal.setOnClickListener {
-                openGallery()
-            }
-
+            dispatchTakePictureIntent()
         }
     }
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == CAMARA) {
-            for (i in permissions.indices) {
-                val permission = permissions[i]
-                val grantResult = grantResults[i]
-                if (permission == Manifest.permission.CAMERA) {
-                    if (grantResult == PackageManager.PERMISSION_GRANTED) {
-                        Toast.makeText(this, "PERMISO CAMARA DADO", Toast.LENGTH_SHORT).show()
-                    } else {
-                        Toast.makeText(this, "PERMISO DE CAMARA NO DADO", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
+    private fun checkGalleryPermission() {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestGalleryPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+        } else {
+            openGallery()
         }
     }
 
@@ -189,5 +188,7 @@ class PerfilUsuario : AppCompatActivity() {
 
     companion object {
         const val CAMARA = 1
+        const val REQUEST_IMAGE_CAPTURE = 1
+        const val REQUEST_PICK_IMAGE = 2
     }
 }
