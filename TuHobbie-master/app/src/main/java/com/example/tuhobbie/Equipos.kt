@@ -1,35 +1,46 @@
 package com.example.tuhobbie
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.AdapterView
-import android.widget.Button
 import android.widget.ListView
-import org.json.JSONObject
-import java.io.IOException
-import java.io.InputStream
+import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.database.*
 
 class Equipos : AppCompatActivity() {
     private lateinit var equiposListView: ListView
     private var mEquiposAdapter: EquiposAdapter? = null
+    private lateinit var databaseReference: DatabaseReference
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_equipos)
-        val json = JSONObject(loadJSONFromAsset())
-        val equiposJSONArray = json.getJSONArray("equipos")
-        val equiponombre = ArrayList<String>()
+
         equiposListView = findViewById(R.id.listaEquipos)
-
-        for (i in 0 until equiposJSONArray.length()) {
-            val jsonObject = equiposJSONArray.getJSONObject(i)
-            val nombreEquipo = jsonObject.getString("nombre_equipo")
-            equiponombre.add(nombreEquipo)
-        }
-
-        mEquiposAdapter = EquiposAdapter(this, R.layout.eventos_adapter, equiponombre)
+        mEquiposAdapter = EquiposAdapter(this, R.layout.eventos_adapter, ArrayList())
         equiposListView.adapter = mEquiposAdapter
 
+        databaseReference = FirebaseDatabase.getInstance().reference.child("app").child("equipos")
+
+        databaseReference.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val equiponombre = ArrayList<String>()
+
+                for (equipoSnapshot in dataSnapshot.children) {
+                    val nombreEquipo = equipoSnapshot.child("nombre_equipo").getValue(String::class.java)
+                    nombreEquipo?.let { equiponombre.add(it) }
+                }
+
+                mEquiposAdapter?.clear()
+                mEquiposAdapter?.addAll(equiponombre)
+                mEquiposAdapter?.notifyDataSetChanged()
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Handle errors here
+                databaseError.toException().printStackTrace()
+            }
+        })
 
         equiposListView.onItemClickListener =
             AdapterView.OnItemClickListener { parent, _, position, _ ->
@@ -38,20 +49,5 @@ class Equipos : AppCompatActivity() {
                 intent.putExtra("equipoElegido", equipoNombre)
                 startActivity(intent)
             }
-    }
-    fun loadJSONFromAsset(): String? {
-        var json: String? = null
-        try {
-            val istream: InputStream = assets.open("equipos.json")
-            val size: Int = istream.available()
-            val buffer = ByteArray(size)
-            istream.read(buffer)
-            istream.close()
-            json = buffer.toString(Charsets.UTF_8)
-        } catch (ex: IOException) {
-            ex.printStackTrace()
-            return null
-        }
-        return json
     }
 }

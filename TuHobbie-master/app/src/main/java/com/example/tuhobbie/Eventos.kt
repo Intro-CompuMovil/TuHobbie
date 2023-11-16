@@ -1,35 +1,46 @@
 package com.example.tuhobbie
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.AdapterView
-import android.widget.Button
 import android.widget.ListView
-import org.json.JSONObject
-import java.io.IOException
-import java.io.InputStream
+import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.database.*
 
 class Eventos : AppCompatActivity() {
     private lateinit var eventosListView: ListView
     private var mEventosAdapter: EventosAdapter? = null
+    private lateinit var databaseReference: DatabaseReference
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_eventos)
-        val json = JSONObject(loadJSONFromAsset())
-        val eventosJSONArray = json.getJSONArray("eventos")
-        val eventonombre = ArrayList<String>()
+
         eventosListView = findViewById(R.id.eventosListView)
-
-        for (i in 0 until eventosJSONArray.length()) {
-            val jsonObject = eventosJSONArray.getJSONObject(i)
-            val nombreEvento = jsonObject.getString("nombre_evento")
-            eventonombre.add(nombreEvento)
-        }
-
-        mEventosAdapter = EventosAdapter(this, R.layout.eventos_adapter, eventonombre)
+        mEventosAdapter = EventosAdapter(this, R.layout.eventos_adapter, ArrayList())
         eventosListView.adapter = mEventosAdapter
 
+        databaseReference = FirebaseDatabase.getInstance().reference.child("app").child("eventos")
+
+        databaseReference.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val eventonombre = ArrayList<String>()
+
+                for (eventoSnapshot in dataSnapshot.children) {
+                    val nombreEvento = eventoSnapshot.child("nombre_evento").getValue(String::class.java)
+                    nombreEvento?.let { eventonombre.add(it) }
+                }
+
+                mEventosAdapter?.clear()
+                mEventosAdapter?.addAll(eventonombre)
+                mEventosAdapter?.notifyDataSetChanged()
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Handle errors here
+                databaseError.toException().printStackTrace()
+            }
+        })
 
         eventosListView.onItemClickListener =
             AdapterView.OnItemClickListener { parent, _, position, _ ->
@@ -39,22 +50,5 @@ class Eventos : AppCompatActivity() {
                 startActivity(intent)
             }
     }
-
-    fun loadJSONFromAsset(): String? {
-        var json: String? = null
-        try {
-            val istream: InputStream = assets.open("eventos.json")
-            val size: Int = istream.available()
-            val buffer = ByteArray(size)
-            istream.read(buffer)
-            istream.close()
-            json = buffer.toString(Charsets.UTF_8)
-        } catch (ex: IOException) {
-            ex.printStackTrace()
-            return null
-        }
-        return json
-    }
 }
-
 

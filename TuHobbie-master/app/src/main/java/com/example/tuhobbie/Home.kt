@@ -34,6 +34,12 @@ import org.osmdroid.views.overlay.Polyline
 import org.osmdroid.views.overlay.TilesOverlay
 import java.io.IOException
 import android.location.Address
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.Locale
@@ -79,8 +85,9 @@ class Home : AppCompatActivity() {
         ) {
 
             // Mostrar explicación si es necesario (esto es opcional)
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, fineLocationPermission) ||
-                ActivityCompat.shouldShowRequestPermissionRationale(this, coarseLocationPermission)
+            if ((ActivityCompat.shouldShowRequestPermissionRationale(this, fineLocationPermission) ||
+                        ActivityCompat.shouldShowRequestPermissionRationale(this, coarseLocationPermission)
+                        )
             ) {
                 // Puedes mostrar una explicación aquí si lo deseas.
             }
@@ -485,56 +492,57 @@ class Home : AppCompatActivity() {
         // Busca el deporte correspondiente en el mapa de marcadoresDeportes
         return marcadoresDeportes[titulo] ?: "Desconocido"
     }
+
     private fun parsearJSON() {
-        // Parsear el JSON (asegúrate de que el archivo canchas.json esté en el formato correcto)
-        try {
-            val inputStream = assets.open("canchas.json")
-            val size = inputStream.available()
-            val buffer = ByteArray(size)
-            inputStream.read(buffer)
-            inputStream.close()
-            val jsonString = String(buffer, Charsets.UTF_8)
+        // Obtener referencia a la base de datos de Firebase
+        val database = Firebase.database
+        val referenciaCanchas = database.reference.child("canchas")
 
-            val jsonObject = JSONObject(jsonString)
-            val canchasArray = jsonObject.getJSONArray("canchas")
+        // Escuchar cambios en la base de datos
+        referenciaCanchas.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                // Limpiar el mapa antes de agregar nuevos marcadores
+                // (puedes implementar esta lógica según tus necesidades)
 
-            for (i in 0 until canchasArray.length()) {
-                val cancha = canchasArray.getJSONObject(i)
-                val lugar = cancha.getString("lugar")
-                val nombreCancha = cancha.getString("nombre_cancha")
-                val dueno = cancha.getString("dueno")
-                val deporte = cancha.getString("deporte")
+                // Iterar sobre los datos de Firebase
+                for (canchaSnapshot in dataSnapshot.children) {
+                    val lugar: String = (canchaSnapshot.child("lugar").getValue(String::class.java)) ?: ""
+                    val nombreCancha: String =
+                        (canchaSnapshot.child("nombre_cancha").getValue(String::class.java)) ?: ""
+                    val dueno: String = (canchaSnapshot.child("dueno").getValue(String::class.java)) ?: ""
+                    val deporte: String =
+                        (canchaSnapshot.child("deporte").getValue(String::class.java)) ?: "default_value"
 
-                // Dentro del bucle que recorre las canchas desde el JSON
-                val geoPoint = buscarDireccion(lugar)
-                if (geoPoint != null) {
-                    if (deporte.equals("Futbol")){
-                        showMarker(geoPoint, "Cancha Fútbol", deporte)
-                    }else if (deporte.equals("Tenis")){
-                        showMarker(geoPoint, "Cancha Tenis", deporte)
+                    // Dentro del bucle que recorre las canchas desde el JSON
+                    val geoPoint = buscarDireccion(lugar)
+                    if (geoPoint != null) {
+                        if (deporte.equals("Futbol")) {
+                            showMarker(geoPoint, "Cancha Fútbol", deporte)
+                        } else if (deporte.equals("Tenis")) {
+                            showMarker(geoPoint, "Cancha Tenis", deporte)
 
-                    }else if (deporte.equals("Americano")){
-                        showMarker(geoPoint, "Cancha Americano", deporte)
+                        } else if (deporte.equals("Americano")) {
+                            showMarker(geoPoint, "Cancha Americano", deporte)
 
-                    }else if (deporte.equals("Voleibol")){
-                        showMarker(geoPoint, "Cancha Voleibol", deporte)
+                        } else if (deporte.equals("Voleibol")) {
+                            showMarker(geoPoint, "Cancha Voleibol", deporte)
 
-                    }else if (deporte.equals("Baloncesto")){
-                        showMarker(geoPoint, "Cancha Baloncesto", deporte)
+                        } else if (deporte.equals("Baloncesto")) {
+                            showMarker(geoPoint, "Cancha Baloncesto", deporte)
 
-                    }else if (deporte.equals("Beisbol")){
-                        showMarker(geoPoint, "Cancha Beisbol", deporte)
+                        } else if (deporte.equals("Beisbol")) {
+                            showMarker(geoPoint, "Cancha Beisbol", deporte)
 
+                        }
                     }
-
                 }
             }
-        } catch (e: JSONException) {
-            e.printStackTrace()
-        }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.e("FirebaseError", "Error in database operation:", databaseError.toException())
+            }
+        })
     }
-
-
 
 
     override fun onPause() {
@@ -547,3 +555,5 @@ class Home : AppCompatActivity() {
         const val LOCALIZACION = 1
     }
 }
+
+

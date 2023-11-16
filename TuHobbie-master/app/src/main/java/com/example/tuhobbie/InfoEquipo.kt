@@ -1,60 +1,55 @@
 package com.example.tuhobbie
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.TextView
-import org.json.JSONObject
-import java.io.InputStream
+import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.database.*
 
 class InfoEquipo : AppCompatActivity() {
+
+    private lateinit var databaseReference: DatabaseReference
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_info_equipo)
-        val json = loadJSONFromAsset("equipos.json")
-        InfoPais(json)
-    }
-    fun loadJSONFromAsset(fileName: String): String {
-        val inputStream: InputStream = assets.open(fileName)
-        val buffer = ByteArray(inputStream.available())
-        inputStream.read(buffer)
-        inputStream.close()
-        return String(buffer)
-    }
-    fun InfoPais(jsonString: String) {
 
-        val pais = intent.getStringExtra("equipoElegido")
-        val jsonObject = JSONObject(jsonString)
-        val jsonArray = jsonObject.getJSONArray("equipos")
+        databaseReference = FirebaseDatabase.getInstance().reference.child("app").child("equipos")
 
-        val textViewName: TextView = findViewById(R.id.nombre2)
-        val textViewInt: TextView = findViewById(R.id.nombreInter2)
-        val textViewSigla: TextView = findViewById(R.id.siglas2)
-        val textViewCapital: TextView = findViewById(R.id.capital2)
-
-        val countryDataMap = mutableMapOf<String, List<String>>()
-
-        for (i in 0 until jsonArray.length()) {
-
-            val jsonObject: JSONObject = jsonArray.getJSONObject(i)
-            val countryName = jsonObject.getString("nombre_equipo")
-            val internName = jsonObject.getString("miembros")
-            val sigla = jsonObject.getString("capitan")
-            val capital = jsonObject.getString("deporte")
-            countryDataMap[countryName] = listOf(internName, sigla, capital)
+        val equipoNombre = intent.getStringExtra("equipoElegido")
+        if (equipoNombre != null) {
+            fetchEquipoInfo(equipoNombre)
         }
+    }
 
-        val key: String? = pais
-        val tail = countryDataMap[key]
+    private fun fetchEquipoInfo(equipoNombre: String) {
+        databaseReference.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val textViewName: TextView = findViewById(R.id.nombre2)
+                val textViewInt: TextView = findViewById(R.id.nombreInter2)
+                val textViewSigla: TextView = findViewById(R.id.siglas2)
+                val textViewCapital: TextView = findViewById(R.id.capital2)
 
-        if (tail != null) {
-            val internName = tail[0]
-            val sigla = tail[1]
-            val capital = tail[2]
+                for (equipoSnapshot in dataSnapshot.children) {
+                    val nombreEquipo = equipoSnapshot.child("nombre_equipo").getValue(String::class.java)
+                    if (nombreEquipo == equipoNombre) {
+                        val internName = equipoSnapshot.child("miembros").getValue(String::class.java)
+                        val sigla = equipoSnapshot.child("capitan").getValue(String::class.java)
+                        val capital = equipoSnapshot.child("deporte").getValue(String::class.java)
 
-            textViewName.text = "Nombre del equipo: $pais"
-            textViewInt.text = "No miembros: $internName"
-            textViewSigla.text = "Capitan: $sigla"
-            textViewCapital.text = "Deporte: $capital"
-        }
+                        textViewName.text = "Nombre del equipo: $nombreEquipo"
+                        textViewInt.text = "No miembros: $internName"
+                        textViewSigla.text = "Capitan: $sigla"
+                        textViewCapital.text = "Deporte: $capital"
+
+                        break  // No need to continue iterating once we found the matching equipo
+                    }
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Handle errors here
+                databaseError.toException().printStackTrace()
+            }
+        })
     }
 }

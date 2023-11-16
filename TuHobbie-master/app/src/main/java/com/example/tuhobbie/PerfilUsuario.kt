@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+import com.google.firebase.auth.*
 import android.provider.MediaStore
 import android.widget.Button
 import android.widget.ImageView
@@ -49,6 +50,14 @@ class PerfilUsuario : AppCompatActivity() {
         val but3: Button = findViewById(R.id.crearEvento)
         val but4: Button = findViewById(R.id.crearEquipo)
         val but5: Button = findViewById(R.id.verHistorial)
+
+        val btnCerrarSesión: Button = findViewById(R.id.editarPerfilButton)
+
+        btnCerrarSesión.setOnClickListener {
+            FirebaseAuth.getInstance().signOut()
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+        }
 
         but2.setOnClickListener {
             intent = Intent(this, ListaAmigos::class.java)

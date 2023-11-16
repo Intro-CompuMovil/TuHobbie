@@ -89,19 +89,12 @@
                 android:id="@+id/invitarAmigosButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Invitar Amigos"
+                android:text="Crear Equipo"
                 android:layout_below="@id/deporteEquipoEditText"
                 android:layout_centerHorizontal="true"
-                android:layout_marginTop="24dp" />
+                android:layout_marginTop="42dp" />
 
-            <Button
-                android:id="@+id/crearEquipoButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Crear Equipo"
-                android:layout_below="@id/invitarAmigosButton"
-                android:layout_centerHorizontal="true"
-                android:layout_marginTop="16dp" />
+
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
 </RelativeLayout>
